@@ -4,6 +4,21 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	<Authors>Jermy Hernandez</Authors>
+	<Company>Nominal Solutions LLC</Company>
+	<Version>1.0.0</Version>
+	<Description>JobManager for Hangfire is a job queue manager designed to be able to dynamically manage jobs.</Description>
+	<Copyright />
+	<PackageProjectUrl>https://github.com/NominalSolutions/NomSol.Hangfire.JobManager</PackageProjectUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<RepositoryUrl>https://github.com/NominalSolutions/NomSol.Hangfire.JobManager</RepositoryUrl>
+	<RepositoryType>Git</RepositoryType>
+	<PackageTags>hangfire jobs manager</PackageTags>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
