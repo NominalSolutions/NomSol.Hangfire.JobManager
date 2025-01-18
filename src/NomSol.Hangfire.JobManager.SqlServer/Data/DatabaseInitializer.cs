@@ -9,12 +9,12 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data
 {
     public class DatabaseInitializer
     {
-        public void InitializeDatabase(HangfireDbContext context)
+        public void InitializeDatabase(HangfireDbContext context, bool GenerateSampleJob = false)
         {
-            GenerateData(context);
+            GenerateData(context, GenerateSampleJob);
         }
 
-        private static void GenerateData(HangfireDbContext context)
+        private static void GenerateData(HangfireDbContext context, bool GenerateSampleJob)
         {
             //Create Schema
             _ = context.Database.ExecuteSqlRaw("IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name=N'" + ServiceCollectionExtension._schemaName + "') EXEC('CREATE SCHEMA [" + ServiceCollectionExtension._schemaName + "]');");
@@ -100,23 +100,25 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data
 
             //Add Recurring Jobs          
 
-            //int jobManger = context.JobManager.Where(aa => aa.JobName == "EODMessage").Count();
-            //if (jobManger == 0)
-            //{
-            //    context.JobManager.Add(new Core.Models.Data.Tables.JobManager
-            //    {
-            //        FK_HangfireJobTypeID = 1,
-            //        FK_JobTypeID = 2,
-            //        JobName = "EODMessage",
-            //        Arguments = "{\"Folder\": \"JobServices\", \"AssemblyName\": \"JobServices\", \"TypeName\": \"TestMessaging\", \"MethodName\": \"TestMessagingAsync\"}",
-            //        CronExpression = "*/7 * * * *",
-            //        Status = "INACTIVE",
-            //        Created_Date = DateTime.Now,
-            //        Active_Flag = false,
-            //    });
-            //}
-
-            //context.SaveChanges();
+            if (GenerateSampleJob)
+            {
+                int jobManger = context.JobManager.Where(aa => aa.JobName == "CountToOneHundred").Count();
+                if (jobManger == 0)
+                {
+                    context.JobManager.Add(new Core.Models.Data.Tables.JobManager
+                    {
+                        FK_HangfireJobTypeID = 2,
+                        FK_JobTypeID = 1,
+                        JobName = "CountToOneHundred",
+                        Arguments = "{\"Folder\": \"SampleModule\", \"AssemblyName\": \"NomSol.Hangfire.Sample.Module\", \"TypeName\": \"SampleJobs\", \"MethodName\": \"SampleJobCountTo100\"}",
+                        CronExpression = "*/30 * * * *",
+                        Status = "ACTIVE",
+                        Created_Date = DateTime.Now,
+                        Active_Flag = false,
+                    });
+                }
+            }
+            context.SaveChanges();
         }
     }
 }

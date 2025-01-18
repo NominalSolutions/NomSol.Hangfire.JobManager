@@ -5,6 +5,7 @@ using Hangfire;
 using Hangfire.Console;
 using Hangfire.SqlServer;
 using Microsoft.Extensions.Options;
+using NomSol.Hangfire.JobManager.Core.Models;
 using NomSol.Hangfire.JobManager.SqlServer;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -28,6 +29,10 @@ namespace NomSol.Hangfire.Dev.Extensions
                 EnableHeavyMigrations = true
             };
 
+            var nomsolJobManagerOptions = new NomSolJobManagerOptions
+            {
+                GenerateSampleJob = true
+            };
 
             services.AddHangfireJobManagerBusinessServices();
 
@@ -35,7 +40,7 @@ namespace NomSol.Hangfire.Dev.Extensions
             {
                 config.UseSqlServerStorage(conStrings.HangfireDatabase, storageOptions);
                 config.UseConsole();
-                config.UseJobManagerWithSql(serviceProvider: services.BuildServiceProvider(), services, sqlOptions: storageOptions);
+                config.UseJobManagerWithSql(serviceProvider: services.BuildServiceProvider(), services, sqlOptions: storageOptions, nomSolJobManagerOptions: nomsolJobManagerOptions);
                 config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
                 config.UseDefaultCulture(CultureInfo.GetCultureInfo("en-US"));
             });

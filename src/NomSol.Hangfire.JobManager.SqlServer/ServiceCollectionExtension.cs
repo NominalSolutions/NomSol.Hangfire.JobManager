@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NomSol.Hangfire.JobManager.Core;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
+using NomSol.Hangfire.JobManager.Core.Models;
 using NomSol.Hangfire.JobManager.SqlServer.Data;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Repository;
@@ -21,9 +22,10 @@ namespace NomSol.Hangfire.JobManager.SqlServer
             return new MonitoringApiHelper(jobStorage.GetMonitoringApi());
         }
 
-        public static IGlobalConfiguration UseJobManagerWithSql(this IGlobalConfiguration configuration, IServiceProvider serviceProvider, IServiceCollection services, SqlServerStorageOptions sqlOptions = null)
+        public static IGlobalConfiguration UseJobManagerWithSql(this IGlobalConfiguration configuration, IServiceProvider serviceProvider, IServiceCollection services, SqlServerStorageOptions? sqlOptions = null, NomSolJobManagerOptions? nomSolJobManagerOptions = null)
         {
             sqlOptions ??= new SqlServerStorageOptions();
+            nomSolJobManagerOptions ??= new NomSolJobManagerOptions();
 
             // Get the current JobStorage
             var jobStorage = JobStorage.Current;
@@ -48,7 +50,7 @@ namespace NomSol.Hangfire.JobManager.SqlServer
             // Initialize Db
             HangfireDbContext? _dbContext = serviceProvider.GetService(typeof(HangfireDbContext)) as HangfireDbContext ?? throw new Exception("HangfireDbContext is not registered in the service collection.");
             DatabaseInitializer dataInitializer = new();
-            dataInitializer.InitializeDatabase(_dbContext);
+            dataInitializer.InitializeDatabase(_dbContext, nomSolJobManagerOptions.GenerateSampleJob);
 
             var config = configuration.UseJobManager(serviceProvider); // Hook into JobManagerCore
             return config;

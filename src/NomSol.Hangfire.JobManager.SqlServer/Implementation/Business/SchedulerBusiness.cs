@@ -41,15 +41,15 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Implementation.Business
                 {
                     dashLogger.CustomLogger("Config: Checking And Applying Updates For Job: " + job.JobName, LogType.Information, true);
 
-                    switch (job.FK_HangfireJobTypeID)
+                    switch (job.FK_JobTypeID)
                     {
                         case (long)ProcessType.ApiCall:
                             dashLogger.CustomLogger("Config: Scheduling API Services", LogType.Information, false);
-                            ScheduleApiJobs(_hangfireRepository, (JobType)job.FK_JobTypeID, job);
+                            ScheduleApiJobs(_hangfireRepository, (JobType)job.FK_HangfireJobTypeID, job);
                             break;
                         case (long)ProcessType.Assembly:
                             dashLogger.CustomLogger("Config: Scheduling Assembly Jobs", LogType.Information, false);
-                            BuildAssemblyJob(_hangfireRepository, (JobType)job.FK_JobTypeID, job);
+                            BuildAssemblyJob(_hangfireRepository, (JobType)job.FK_HangfireJobTypeID, job);
                             break;
                     }
                 }

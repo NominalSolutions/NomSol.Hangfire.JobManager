@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NomSol.Hangfire.JobManager.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NomSol.Hangfire.JobManager.Core", "..\..\src\NomSol.Hangfire.JobManager.Core\NomSol.Hangfire.JobManager.Core.csproj", "{607361D2-86FA-4786-9E49-B8D419981316}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NomSol.Hangfire.Sample.Module", "..\NomSol.Hangfire.Sample.Module\NomSol.Hangfire.Sample.Module.csproj", "{A691C22E-D05B-4A4E-BDC3-1955E8184786}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{607361D2-86FA-4786-9E49-B8D419981316}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{607361D2-86FA-4786-9E49-B8D419981316}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{607361D2-86FA-4786-9E49-B8D419981316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A691C22E-D05B-4A4E-BDC3-1955E8184786}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A691C22E-D05B-4A4E-BDC3-1955E8184786}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A691C22E-D05B-4A4E-BDC3-1955E8184786}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A691C22E-D05B-4A4E-BDC3-1955E8184786}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

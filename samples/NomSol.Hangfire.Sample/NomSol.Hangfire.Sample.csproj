@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\src\NomSol.Hangfire.JobManager.SqlServer\NomSol.Hangfire.JobManager.SqlServer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Modules\" />
+  </ItemGroup>
+
 </Project>
