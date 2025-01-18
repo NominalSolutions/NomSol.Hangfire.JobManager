@@ -1,0 +1,1 @@
+# NominalSolutions-NomSol.Hangfire.JobManager
