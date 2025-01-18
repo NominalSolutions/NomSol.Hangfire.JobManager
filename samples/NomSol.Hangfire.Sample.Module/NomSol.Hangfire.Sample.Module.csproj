@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputPath>..\NomSol.Hangfire.Sample\bin\Debug\net9.0\Modules\SampleModule\</OutputPath>
+	</PropertyGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="Hangfire.Core" Version="1.8.17" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NomSol.Hangfire.JobManager.Core\NomSol.Hangfire.JobManager.Core.csproj" />
+  </ItemGroup>
+
+</Project>

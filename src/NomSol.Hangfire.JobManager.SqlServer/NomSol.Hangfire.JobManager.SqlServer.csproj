@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+	<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	<Authors>Jermy Hernandez</Authors>
+	<Company>Nominal Solutions LLC</Company>
+	<Version>1.0.0</Version>
+	<Description>JobManager for Hangfire is a job queue manager designed to be able to dynamically manage jobs from SQL Server.</Description>
+	<Copyright />
+	<PackageProjectUrl>https://github.com/NominalSolutions/NomSol.Hangfire.JobManager</PackageProjectUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<RepositoryUrl>https://github.com/NominalSolutions/NomSol.Hangfire.JobManager</RepositoryUrl>
+	<RepositoryType>Git</RepositoryType>
+	<PackageTags>hangfire jobs manager</PackageTags>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.17" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NomSol.Hangfire.JobManager.Core\NomSol.Hangfire.JobManager.Core.csproj" />
+  </ItemGroup>
+
+</Project>
