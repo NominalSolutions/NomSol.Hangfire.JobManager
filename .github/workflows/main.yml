@@ -23,11 +23,15 @@ jobs:
 
       # Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore
+        run: |
+          dotnet restore ./src/NomSol.Hangfire.JobManager.Core/NomSol.Hangfire.JobManager.Core.csproj 
+          dotnet restore ./src/NomSol.Hangfire.JobManager.SqlServer/NomSol.Hangfire.JobManager.SqlServer.csproj
 
       # Build the projects
       - name: Build the projects
-        run: dotnet build --configuration Release
+        run: |
+          dotnet build ./src/NomSol.Hangfire.JobManager.Core/NomSol.Hangfire.JobManager.Core.csproj --configuration Release --no-restore
+          dotnet build ./src/NomSol.Hangfire.JobManager.SqlServer/NomSol.Hangfire.JobManager.SqlServer.csproj --configuration Release --no-restore
 
       # Pack the projects
       - name: Pack the projects
