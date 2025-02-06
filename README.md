@@ -5,7 +5,7 @@ NomSol Hangfire Job Manager is a robust extension for managing Hangfire jobs dyn
 1. Install the package: This library can be added to your project as a NuGet package.
 
 ```bash
-dotnet add package NomSol.Hangfire.JobManager
+dotnet add package NomSol.Hangfire.JobManager.SqlServer
 ```
 
 ### Usage
