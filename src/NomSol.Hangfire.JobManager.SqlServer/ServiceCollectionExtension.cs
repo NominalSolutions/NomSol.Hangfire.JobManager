@@ -3,6 +3,7 @@ using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NomSol.Hangfire.JobManager.Core;
+using NomSol.Hangfire.JobManager.Core.Endpoints.v1.Services;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Models;
 using NomSol.Hangfire.JobManager.SqlServer.Data;
@@ -61,6 +62,7 @@ namespace NomSol.Hangfire.JobManager.SqlServer
             services.AddDbContext<HangfireDbContext>(options => options.UseSqlServer(connectionString));
 
             services.AddScoped<ISchedulerService, SchedulerService>();
+            services.AddScoped<IJobManagerServices, JobManagerService>();
             services.AddScoped<IHangfireJobManagerRepository, HangfireJobManagerRepository>();
             return services;
         }

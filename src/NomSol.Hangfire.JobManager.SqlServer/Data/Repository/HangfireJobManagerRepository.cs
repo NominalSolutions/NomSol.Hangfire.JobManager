@@ -1,6 +1,9 @@
 ﻿using NomSol.Hangfire.JobManager.Core.Interfaces;
+using NomSol.Hangfire.JobManager.Core.Models;
+using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NomSol.Hangfire.JobManager.SqlServer.Data.Repository
 {
@@ -23,6 +26,21 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Repository
         public List<Core.Models.Data.Tables.JobManager> GetAllJobs()
         {
             return hangfireContext.GetAllJobs();
+        }
+
+        public async Task AddFireForgetJob(FireForgetJobRequest request)
+        {
+            FireForgetJobManager fireForgetJobManager = new FireForgetJobManager
+            {
+                FK_JobTypeID = request.TypeId,
+                JobName = request.JobName,
+                Arguments = request.Arguments,
+                Status = "ACTIVE",
+                Created_Date = System.DateTime.Now,
+                Active_Flag = false
+            };
+
+            await hangfireContext.CreateFireForgetJob(fireForgetJobManager);
         }
     }
 }
