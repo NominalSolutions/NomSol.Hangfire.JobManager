@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using NomSol.Hangfire.Dev;
 using NomSol.Hangfire.Dev.Extensions;
+using NomSol.Hangfire.JobManager.Core;
 
 List<CustomApiVersionModel> apiVersions =
 [
@@ -71,8 +72,7 @@ app.AddCustomSwagger(configuration, apiVersions.Select(a => a.VersionPath).ToLis
 //////////////////
 ///Configure Endpoints
 ///
-
-app.MapEndpointsForVersion(versionSet, apiVersions);
+app.EnableNomSolJobManagerEndpoints(RequireAuthorization: false);
 
 // Map health check endpoint
 app.MapHealthChecks("/health");

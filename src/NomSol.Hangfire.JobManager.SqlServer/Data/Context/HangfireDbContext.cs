@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
+using System.Threading.Tasks;
 
 namespace NomSol.Hangfire.JobManager.SqlServer.Data.Context
 {
@@ -112,6 +113,12 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Context
         {
             JobManager.Add(job);
             SaveChanges();
+        }
+
+        internal async Task CreateFireForgetJob(FireForgetJobManager job)
+        {
+            FireForgetJobManager.Add(job);
+            await SaveChangesAsync();
         }
     }
 

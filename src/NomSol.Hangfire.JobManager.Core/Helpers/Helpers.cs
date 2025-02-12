@@ -1,4 +1,8 @@
-﻿namespace NomSol.Hangfire.JobManager.Core.Helpers
+﻿using Asp.Versioning;
+using NomSol.Hangfire.JobManager.Core.Models;
+using System.Reflection.Metadata.Ecma335;
+
+namespace NomSol.Hangfire.JobManager.Core.Helpers
 {
     public static class Helpers
     {
@@ -9,6 +13,18 @@
                 .Any(assembly => assembly.FullName.Contains("FaceIT.Hangfire.Tags"));
 
             return isTagsInstalled;
+        }
+
+        public static List<CustomApiVersionModel> ReturnApiVersions()
+        {
+            return
+            [
+                new()
+                {
+                    Version = new ApiVersion(1),
+                    VersionPath = "v1"
+                }
+            ];
         }
     }
 }
