@@ -3,6 +3,7 @@ using Hangfire.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
 using NomSol.Hangfire.JobManager.Core.Dashboard;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
+using System.Reflection;
 
 namespace NomSol.Hangfire.JobManager.Core
 {
@@ -14,6 +15,11 @@ namespace NomSol.Hangfire.JobManager.Core
 
             DashboardRoutes.Routes.AddRazorPage(JobManagerPage.PageRoute, x => new JobManagerPage(serviceProvider.GetRequiredService<IHangfireJobManagerRepository>()));
             DashboardRoutes.Routes.Add(JobManagerPage.PageRoute + "/update", new JobManagerUpdateDispatcher(serviceProvider));
+
+            // Serve embedded cronstrue.min.js so there is no CDN dependency
+            var assembly = typeof(JobManagerPage).Assembly;
+            DashboardRoutes.Routes.Add("/jobmanager/js/cronstrue", new EmbeddedResourceDispatcher(assembly, "cronstrue.min.js", "application/javascript"));
+
             NavigationMenu.Items.Add(page => new MenuItem(JobManagerPage.Title, page.Url.To(JobManagerPage.PageRoute))
             {
                 Active = page.RequestPath.StartsWith(JobManagerPage.PageRoute)

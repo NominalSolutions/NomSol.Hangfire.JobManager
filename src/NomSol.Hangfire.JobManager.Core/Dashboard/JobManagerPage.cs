@@ -39,14 +39,23 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
             WriteLiteral("      }\r\n");
             WriteLiteral("    </style>\r\n");
             WriteLiteral("    <div id=\"jm-error-banner\"></div>\r\n");
-            WriteLiteral("<script src=\"https://unpkg.com/cronstrue@latest/dist/cronstrue.min.js\"></script>\r\n");
+
+            var cronstrueUrl = Url.To("/jobmanager/js/cronstrue");
+            WriteLiteral($"<script src=\"{cronstrueUrl}\"></script>\r\n");
             WriteLiteral("<script>\r\n");
-            // Show error from query string
+            // Show error from query string — sanitize via textContent to prevent XSS
             WriteLiteral("(function() {\r\n");
             WriteLiteral("  var p = new URLSearchParams(window.location.search);\r\n");
             WriteLiteral("  var e = p.get('error');\r\n");
             WriteLiteral("  if (e) {\r\n");
-            WriteLiteral("    document.getElementById('jm-error-banner').innerHTML = '<div class=\"alert alert-danger\"><strong>Validation Error:</strong> ' + decodeURIComponent(e) + '</div>';\r\n");
+            WriteLiteral("    var banner = document.getElementById('jm-error-banner');\r\n");
+            WriteLiteral("    var div = document.createElement('div');\r\n");
+            WriteLiteral("    div.className = 'alert alert-danger';\r\n");
+            WriteLiteral("    var strong = document.createElement('strong');\r\n");
+            WriteLiteral("    strong.textContent = 'Validation Error: ';\r\n");
+            WriteLiteral("    div.appendChild(strong);\r\n");
+            WriteLiteral("    div.appendChild(document.createTextNode(decodeURIComponent(e)));\r\n");
+            WriteLiteral("    banner.appendChild(div);\r\n");
             WriteLiteral("  }\r\n");
             WriteLiteral("})();\r\n");
             // Live cron description update
@@ -123,7 +132,7 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
 
                     // Cron Expression
                     WriteLiteral($"              <td>\r\n");
-                    WriteLiteral($"                  <input autocomplete=\"off\" type=\"text\" class=\"form-control input-sm hf-input-theme\" style=\"font-family: monospace; max-width: 100px;\" data-field=\"cron\" value=\"{System.Net.WebUtility.HtmlEncode(job.CronExpression)}\" oninput=\"updateCronDescription(this)\" />\r\n");
+                    WriteLiteral($"                  <input autocomplete=\"off\" type=\"text\" class=\"form-control input-sm hf-input-theme\" style=\"font-family: monospace; max-width: 150px;\" data-field=\"cron\" value=\"{System.Net.WebUtility.HtmlEncode(job.CronExpression)}\" oninput=\"updateCronDescription(this)\" />\r\n");
                     WriteLiteral($"                  <small class=\"text-muted\">{System.Net.WebUtility.HtmlEncode(cronTranslation)}</small>\r\n");
                     WriteLiteral($"              </td>\r\n");
 
