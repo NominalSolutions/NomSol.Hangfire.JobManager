@@ -1,4 +1,4 @@
-﻿using NomSol.Hangfire.JobManager.Core.Interfaces;
+using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Models;
 using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
@@ -26,6 +26,21 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Repository
         public List<Core.Models.Data.Tables.JobManager> GetAllJobs()
         {
             return hangfireContext.GetAllJobs();
+        }
+
+        public List<Core.Models.Data.Tables.JobManager> GetAllRecurringJobs()
+        {
+            return hangfireContext.GetAllRecurringJobs();
+        }
+
+        public Core.Models.Data.Tables.JobManager? GetJobById(long jobId)
+        {
+            return hangfireContext.GetJobById(jobId);
+        }
+
+        public void UpdateJob(long jobId, string cronExpression, string arguments, string status)
+        {
+            hangfireContext.UpdateJob(jobId, cronExpression, arguments, status);
         }
 
         public async Task AddFireForgetJob(FireForgetJobRequest request)

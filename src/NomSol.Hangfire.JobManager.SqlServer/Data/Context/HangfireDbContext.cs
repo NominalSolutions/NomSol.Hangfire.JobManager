@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +50,29 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Context
             }
 
             return jm;
+        }
+
+        internal List<Core.Models.Data.Tables.JobManager> GetAllRecurringJobs()
+        {
+            return JobManager.AsNoTracking().Where(a => !a.Active_Flag).ToList();
+        }
+
+        internal Core.Models.Data.Tables.JobManager? GetJobById(long jobId)
+        {
+            return JobManager.AsNoTracking().FirstOrDefault(a => a.PK_Job_ID == jobId);
+        }
+
+        internal void UpdateJob(long jobId, string cronExpression, string arguments, string status)
+        {
+            var job = JobManager.AsTracking().FirstOrDefault(a => a.PK_Job_ID == jobId);
+            if (job != null)
+            {
+                job.CronExpression = cronExpression;
+                job.Arguments = arguments;
+                job.Status = status;
+                job.Modified_Date = DateTime.Now;
+                SaveChanges();
+            }
         }
 
         internal void MarkJobComplete(long jobId, string jobName)
