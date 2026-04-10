@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NomSol.Hangfire.JobManager.Core.Models.Data.Tables
@@ -61,5 +61,18 @@ namespace NomSol.Hangfire.JobManager.Core.Models.Data.Tables
         public required string Name { get; set; }
         public bool Active_Flag { get; set; }
 
+    }
+
+    [Table("JobManagerUsers")]
+    public class JobManagerUsers
+    {
+        [Key]
+        public long PK_User_ID { get; set; }
+        public required string Username { get; set; }
+        public string? Password { get; set; }
+        public required string Role { get; set; }
+        public DateTime Created_Date { get; set; }
+        public DateTime? Modified_Date { get; set; }
+        public bool Active_Flag { get; set; }
     }
 }

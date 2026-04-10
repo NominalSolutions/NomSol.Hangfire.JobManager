@@ -57,5 +57,30 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Repository
 
             await hangfireContext.CreateFireForgetJob(fireForgetJobManager);
         }
+
+        public List<JobManagerUsers> GetAllUsers()
+        {
+            return hangfireContext.GetAllUsers();
+        }
+
+        public JobManagerUsers? GetUserByUsername(string username)
+        {
+            return hangfireContext.GetUserByUsername(username);
+        }
+
+        public void AddUser(string username, string role, string? password = null)
+        {
+            hangfireContext.AddUser(username, role, password);
+        }
+
+        public void UpdateUser(long userId, string username, string role, string? password = null)
+        {
+            hangfireContext.UpdateUser(userId, username, role, password);
+        }
+
+        public void DeleteUser(long userId)
+        {
+            hangfireContext.DeleteUser(userId);
+        }
     }
 }

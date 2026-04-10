@@ -22,6 +22,13 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
 
             var repository = _serviceProvider.GetRequiredService<IHangfireJobManagerRepository>();
             var schedulerService = _serviceProvider.GetRequiredService<ISchedulerService>();
+            var authService = _serviceProvider.GetRequiredService<IJobManagerAuthorizationService>();
+
+            if (!authService.IsAuthorized(context, "Editor"))
+            {
+                response.StatusCode = 403;
+                return;
+            }
 
             if (request.Method == "POST")
             {

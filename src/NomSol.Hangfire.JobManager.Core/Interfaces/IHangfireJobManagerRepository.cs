@@ -1,4 +1,5 @@
 using NomSol.Hangfire.JobManager.Core.Models;
+using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
 
 namespace NomSol.Hangfire.JobManager.Core.Interfaces
 {
@@ -10,5 +11,12 @@ namespace NomSol.Hangfire.JobManager.Core.Interfaces
         void UpdateJob(long jobId, string cronExpression, string arguments, string status);
         void MarkJobComplete(long jobId, string jobName);
         Task AddFireForgetJob(FireForgetJobRequest request);
+
+        // User management (used when EnableUserAdmin is true)
+        List<JobManagerUsers> GetAllUsers();
+        JobManagerUsers? GetUserByUsername(string username);
+        void AddUser(string username, string role, string? password = null);
+        void UpdateUser(long userId, string username, string role, string? password = null);
+        void DeleteUser(long userId);
     }
 }

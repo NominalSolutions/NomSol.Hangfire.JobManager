@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +10,7 @@ using NomSol.Hangfire.JobManager.SqlServer.Data;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Repository;
 using NomSol.Hangfire.JobManager.SqlServer.Implementation;
+using NomSol.Hangfire.JobManager.SqlServer.Services;
 using System;
 
 namespace NomSol.Hangfire.JobManager.SqlServer
@@ -51,19 +52,23 @@ namespace NomSol.Hangfire.JobManager.SqlServer
             // Initialize Db
             HangfireDbContext? _dbContext = serviceProvider.GetService(typeof(HangfireDbContext)) as HangfireDbContext ?? throw new Exception("HangfireDbContext is not registered in the service collection.");
             DatabaseInitializer dataInitializer = new();
-            dataInitializer.InitializeDatabase(_dbContext, nomSolJobManagerOptions.GenerateSampleJob);
+            dataInitializer.InitializeDatabase(_dbContext, nomSolJobManagerOptions);
 
             var config = configuration.UseJobManager(serviceProvider); // Hook into JobManagerCore
             return config;
         }
 
-        public static IServiceCollection AddHangfireJobManagerBusinessServices(this IServiceCollection services)
+        public static IServiceCollection AddHangfireJobManagerBusinessServices(this IServiceCollection services, NomSolJobManagerOptions? options = null)
         {
-            services.AddDbContext<HangfireDbContext>(options => options.UseSqlServer(connectionString));
+            options ??= new NomSolJobManagerOptions();
 
+            services.AddDbContext<HangfireDbContext>(options2 => options2.UseSqlServer(connectionString));
+
+            services.AddSingleton(options);
             services.AddScoped<ISchedulerService, SchedulerService>();
             services.AddScoped<IJobManagerServices, JobManagerService>();
             services.AddScoped<IHangfireJobManagerRepository, HangfireJobManagerRepository>();
+            services.AddScoped<IJobManagerAuthorizationService, JobManagerAuthorizationService>();
             return services;
         }
 

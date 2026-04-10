@@ -15,6 +15,7 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Context
         public virtual DbSet<FireForgetJobManager> FireForgetJobManager { get; set; }
         public virtual DbSet<HangfireJobTypes> HangfireJobTypes { get; set; }
         public virtual DbSet<JobTypes> Types { get; set; }
+        public virtual DbSet<JobManagerUsers> JobManagerUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Core.Models.Data.Tables.JobManager>()
@@ -25,6 +26,8 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Context
                 .ToTable("JobTypes", schema: ServiceCollectionExtension._schemaName);
             modelBuilder.Entity<HangfireJobTypes>()
                 .ToTable("HangfireJobTypes", schema: ServiceCollectionExtension._schemaName);
+            modelBuilder.Entity<JobManagerUsers>()
+                .ToTable("JobManagerUsers", schema: ServiceCollectionExtension._schemaName);
         }
 
         internal List<Core.Models.Data.Tables.JobManager> GetAllJobs()
@@ -142,6 +145,54 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Context
         {
             FireForgetJobManager.Add(job);
             await SaveChangesAsync();
+        }
+
+        // --- User Management ---
+        internal List<JobManagerUsers> GetAllUsers()
+        {
+            return JobManagerUsers.AsNoTracking().Where(u => !u.Active_Flag).ToList();
+        }
+
+        internal JobManagerUsers? GetUserByUsername(string username)
+        {
+            return JobManagerUsers.AsNoTracking().FirstOrDefault(u => u.Username == username && !u.Active_Flag);
+        }
+
+        internal void AddUser(string username, string role, string? password = null)
+        {
+            JobManagerUsers.Add(new JobManagerUsers
+            {
+                Username = username,
+                Role = role,
+                Password = password,
+                Created_Date = DateTime.Now,
+                Active_Flag = false
+            });
+            SaveChanges();
+        }
+
+        internal void UpdateUser(long userId, string username, string role, string? password = null)
+        {
+            var user = JobManagerUsers.AsTracking().FirstOrDefault(u => u.PK_User_ID == userId);
+            if (user != null)
+            {
+                user.Username = username;
+                user.Role = role;
+                if (password != null) user.Password = password;
+                user.Modified_Date = DateTime.Now;
+                SaveChanges();
+            }
+        }
+
+        internal void DeleteUser(long userId)
+        {
+            var user = JobManagerUsers.AsTracking().FirstOrDefault(u => u.PK_User_ID == userId);
+            if (user != null)
+            {
+                user.Active_Flag = true; // Soft delete
+                user.Modified_Date = DateTime.Now;
+                SaveChanges();
+            }
         }
     }
 

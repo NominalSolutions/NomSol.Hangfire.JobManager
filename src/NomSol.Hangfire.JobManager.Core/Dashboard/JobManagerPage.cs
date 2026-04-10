@@ -1,6 +1,7 @@
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
+using NomSol.Hangfire.JobManager.Core.Models;
 using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
 using System.Collections.Generic;
 
@@ -12,16 +13,41 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
         public const string PageRoute = "/jobmanager";
 
         private readonly IHangfireJobManagerRepository _repository;
+        private readonly IJobManagerAuthorizationService _authService;
+        private readonly NomSolJobManagerOptions _options;
 
-        public JobManagerPage(IHangfireJobManagerRepository repository)
+        public JobManagerPage(IHangfireJobManagerRepository repository, IJobManagerAuthorizationService authService, NomSolJobManagerOptions options)
         {
             _repository = repository;
+            _authService = authService;
+            _options = options;
         }
 
         public override void Execute()
         {
-            WriteLiteral("\r\n");
             Layout = new LayoutPage(Title);
+
+            if (_options.EnableUserAdmin)
+            {
+                var current = _authService.GetCurrentUsername(Context);
+                if (_options.UseLocalAuth && (current == null || current == "__SETUP_REQUIRED__"))
+                {
+                    var httpContext = Context.GetHttpContext();
+                    var targetUrl = current == "__SETUP_REQUIRED__" 
+                        ? Url.To(UserSetupPage.PageRoute) 
+                        : Url.To(UserLoginPage.PageRoute);
+
+                    httpContext.Response.StatusCode = 302;
+                    httpContext.Response.Headers["Location"] = targetUrl;
+                    return;
+                }
+
+                if (!_authService.IsAuthorized(Context, "Viewer"))
+                {
+                    WriteLiteral("<div class=\"row\"><div class=\"col-md-12\"><h1 class=\"page-header\">Job Manager</h1><div class=\"alert alert-danger\">Access Denied. You do not have permission to view this page.</div></div></div>");
+                    return;
+                }
+            }
 
             var updateUrl = Url.To(PageRoute + "/update");
 
@@ -93,13 +119,18 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
             WriteLiteral("</script>\r\n");
 
             List<JobManager.Core.Models.Data.Tables.JobManager> jobs = _repository.GetAllRecurringJobs();
-
             if (jobs.Count == 0)
             {
                 WriteLiteral("    <div class=\"alert alert-info\">No recurring jobs found.</div>\r\n");
             }
             else
             {
+                var isEditor = _authService.IsAuthorized(Context, "Editor");
+                if (!isEditor && _authService.IsEnabled)
+                {
+                    WriteLiteral("    <div class=\"alert alert-warning\"><strong>Read-Only Access:</strong> You do not have permission to modify job configurations.</div>\r\n");
+                }
+
                 WriteLiteral("    <div class=\"table-responsive\">\r\n");
                 WriteLiteral("      <table class=\"table\">\r\n");
                 WriteLiteral("        <thead>\r\n");
@@ -112,53 +143,36 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
                 WriteLiteral("          </tr>\r\n");
                 WriteLiteral("        </thead>\r\n");
                 WriteLiteral("        <tbody>\r\n");
-
                 foreach (var job in jobs)
                 {
                     WriteLiteral($"          <tr data-job-id=\"{job.PK_Job_ID}\">\r\n");
-
-                    // Job Name (Read-only text)
                     WriteLiteral($"              <td>{System.Net.WebUtility.HtmlEncode(job.JobName)}</td>\r\n");
 
                     string cronTranslation = string.Empty;
-                    try
-                    {
-                        cronTranslation = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.CronExpression);
-                    }
-                    catch
-                    {
-                        cronTranslation = "Invalid Expression";
-                    }
+                    try { cronTranslation = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.CronExpression); }
+                    catch { cronTranslation = "Invalid Expression"; }
 
-                    // Cron Expression
                     WriteLiteral($"              <td>\r\n");
-                    WriteLiteral($"                  <input autocomplete=\"off\" type=\"text\" class=\"form-control input-sm hf-input-theme\" style=\"font-family: monospace; max-width: 150px;\" data-field=\"cron\" value=\"{System.Net.WebUtility.HtmlEncode(job.CronExpression)}\" oninput=\"updateCronDescription(this)\" />\r\n");
+                    WriteLiteral($"                  <input autocomplete=\"off\" type=\"text\" class=\"form-control input-sm hf-input-theme\" style=\"font-family: monospace; max-width: 150px;\" data-field=\"cron\" value=\"{System.Net.WebUtility.HtmlEncode(job.CronExpression)}\" oninput=\"updateCronDescription(this)\" {(isEditor ? "" : "readonly")} />\r\n");
                     WriteLiteral($"                  <small class=\"text-muted\">{System.Net.WebUtility.HtmlEncode(cronTranslation)}</small>\r\n");
                     WriteLiteral($"              </td>\r\n");
-
-                    // Arguments
-                    WriteLiteral($"              <td><input type=\"text\" class=\"form-control input-sm hf-input-theme\" style=\"min-width: 550px;\" data-field=\"args\" value=\"{System.Net.WebUtility.HtmlEncode(job.Arguments)}\" /></td>\r\n");
-
-                    // Status (Dropdown)
-                    WriteLiteral("              <td><select class=\"form-control input-sm hf-input-theme\" style=\"width: auto;\" data-field=\"status\">\r\n");
-
-                    if (job.Status == "ACTIVE")
+                    WriteLiteral($"              <td><input type=\"text\" class=\"form-control input-sm hf-input-theme\" style=\"min-width: 550px;\" data-field=\"args\" value=\"{System.Net.WebUtility.HtmlEncode(job.Arguments)}\" {(isEditor ? "" : "readonly")} /></td>\r\n");
+                    WriteLiteral($"              <td><select class=\"form-control input-sm hf-input-theme\" style=\"width: auto;\" data-field=\"status\" {(isEditor ? "" : "disabled")}>\r\n");
+                    WriteLiteral($"                <option value=\"ACTIVE\" {(job.Status == "ACTIVE" ? "selected" : "")}>Active</option>\r\n");
+                    WriteLiteral($"                <option value=\"INACTIVE\" {(job.Status == "INACTIVE" ? "selected" : "")}>Inactive</option>\r\n");
+                    WriteLiteral("              </select></td>\r\n");
+                    WriteLiteral("              <td>\r\n");
+                    if (isEditor)
                     {
-                        WriteLiteral("                <option value=\"ACTIVE\" selected>Active</option>\r\n");
-                        WriteLiteral("                <option value=\"INACTIVE\">Inactive</option>\r\n");
+                        WriteLiteral("                <button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"saveJob(this)\">Save Changes</button>\r\n");
                     }
                     else
                     {
-                        WriteLiteral("                <option value=\"ACTIVE\">Active</option>\r\n");
-                        WriteLiteral("                <option value=\"INACTIVE\" selected>Inactive</option>\r\n");
+                        WriteLiteral("                <span class=\"label label-default\">Read-Only</span>\r\n");
                     }
-                    WriteLiteral("              </select></td>\r\n");
-
-                    // Actions — type=button, NO form submission, pure JS
-                    WriteLiteral("              <td><button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"saveJob(this)\">Save Changes</button></td>\r\n");
+                    WriteLiteral("              </td>\r\n");
                     WriteLiteral("          </tr>\r\n");
                 }
-
                 WriteLiteral("        </tbody>\r\n");
                 WriteLiteral("      </table>\r\n");
                 WriteLiteral("    </div>\r\n");
@@ -169,4 +183,3 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
         }
     }
 }
-
