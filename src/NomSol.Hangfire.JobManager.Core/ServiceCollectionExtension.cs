@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NomSol.Hangfire.JobManager.Core.Dashboard;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Models;
-using System.Reflection;
 
 namespace NomSol.Hangfire.JobManager.Core
 {
