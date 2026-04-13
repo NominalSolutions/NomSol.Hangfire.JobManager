@@ -1,7 +1,5 @@
 using Hangfire.Dashboard;
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
 {

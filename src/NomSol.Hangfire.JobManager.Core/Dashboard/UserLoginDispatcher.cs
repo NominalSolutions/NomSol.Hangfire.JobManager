@@ -1,11 +1,8 @@
 using Hangfire.Dashboard;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NomSol.Hangfire.JobManager.Core.Helpers;
-using System.Linq;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 

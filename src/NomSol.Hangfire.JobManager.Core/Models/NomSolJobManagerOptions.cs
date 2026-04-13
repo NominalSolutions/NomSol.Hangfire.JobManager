@@ -1,5 +1,3 @@
-using System;
-
 namespace NomSol.Hangfire.JobManager.Core.Models
 {
     public class NomSolJobManagerOptions

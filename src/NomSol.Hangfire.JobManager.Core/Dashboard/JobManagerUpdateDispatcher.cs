@@ -1,7 +1,5 @@
 using Hangfire.Dashboard;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

@@ -2,8 +2,6 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Models;
-using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
-using System.Collections.Generic;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
 {

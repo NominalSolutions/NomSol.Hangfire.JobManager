@@ -4,7 +4,6 @@ using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
-using NomSol.Hangfire.JobManager.Core;
 
 namespace NomSol.Hangfire.JobManager.SqlServer.Data
 {

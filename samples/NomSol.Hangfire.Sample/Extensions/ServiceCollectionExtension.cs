@@ -3,7 +3,6 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Hangfire;
 using Hangfire.Console;
-using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Microsoft.Extensions.Options;
 using NomSol.Hangfire.JobManager.Core.Models;

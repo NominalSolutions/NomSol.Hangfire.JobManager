@@ -1,6 +1,5 @@
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
-using System;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
 {

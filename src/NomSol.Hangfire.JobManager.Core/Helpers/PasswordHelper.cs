@@ -1,5 +1,3 @@
-using BCrypt.Net;
-
 namespace NomSol.Hangfire.JobManager.Core.Helpers
 {
     public static class PasswordHelper

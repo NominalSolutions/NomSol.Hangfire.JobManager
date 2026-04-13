@@ -2,9 +2,6 @@ using Hangfire.Dashboard;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Helpers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
