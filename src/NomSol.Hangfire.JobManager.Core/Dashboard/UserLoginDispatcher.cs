@@ -6,88 +6,105 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NomSol.Hangfire.JobManager.Core.Helpers;
 using System.Linq;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Logging;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
 {
     public class UserLoginDispatcher : IDashboardDispatcher
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly IDataProtector _protector;
+        private readonly ILogger<UserLoginDispatcher> _logger;
 
         public UserLoginDispatcher(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            var dataProtectionProvider = _serviceProvider.GetRequiredService<IDataProtectionProvider>();
+            _protector = dataProtectionProvider.CreateProtector("NomSol.Hangfire.JobManager.Auth");
+            _logger = _serviceProvider.GetRequiredService<ILogger<UserLoginDispatcher>>();
         }
 
         public async Task Dispatch(DashboardContext context)
         {
-            if (!"POST".Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                context.Response.StatusCode = 405;
-                return;
+                if (!"POST".Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = 405;
+                    return;
+                }
+
+                var repository = _serviceProvider.GetRequiredService<IHangfireJobManagerRepository>();
+                
+                async Task<string?> GetFormValue(string key)
+                {
+                    var values = await context.Request.GetFormValuesAsync(key);
+                    return values != null && values.Count > 0 ? values[0] : null;
+                }
+
+                var username = await GetFormValue("UserName");
+                var password = await GetFormValue("Password");
+
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                {
+                    await RedirectWithErrorMessage(context, "Username and Password are required.");
+                    return;
+                }
+
+                // Check for setup: if NO users exist, redirect to setup
+                if (!repository.GetAllUsers().Any())
+                {
+                    var setupUrl = context.Request.PathBase + UserSetupPage.PageRoute;
+                    var httpContextForSetup = context.GetHttpContext();
+                    httpContextForSetup.Response.StatusCode = 302;
+                    httpContextForSetup.Response.Headers["Location"] = setupUrl;
+                    return;
+                }
+
+                var user = repository.GetUserByUsername(username);
+                if (user == null || string.IsNullOrEmpty(user.Password) || !PasswordHelper.VerifyPassword(password, user.Password)) 
+                {
+                    await RedirectWithErrorMessage(context, "Invalid username or password.");
+                    return;
+                }
+
+                // Set secure (protected) cookie
+                var protectedUsername = _protector.Protect(username);
+                var httpContext = context.GetHttpContext();
+                var path = httpContext.Request.PathBase.HasValue && !string.IsNullOrWhiteSpace(httpContext.Request.PathBase.Value)
+                    ? httpContext.Request.PathBase.Value
+                    : "/";
+
+                httpContext.Response.Cookies.Append("NomSolJobManagerUser", protectedUsername, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = httpContext.Request.IsHttps,
+                    Expires = DateTimeOffset.Now.AddDays(7),
+                    Path = path,
+                    SameSite = SameSiteMode.Lax
+                });
+
+                var redirectUrl = context.Request.PathBase + JobManagerPage.PageRoute;
+                httpContext.Response.StatusCode = 302;
+                httpContext.Response.Headers["Location"] = redirectUrl;
+                await context.Response.WriteAsync($"Redirecting to {redirectUrl}...");
             }
-
-            var repository = _serviceProvider.GetRequiredService<IHangfireJobManagerRepository>();
-            
-            async Task<string?> GetFormValue(string key)
+            catch (Exception ex)
             {
-                var values = await context.Request.GetFormValuesAsync(key);
-                return values != null && values.Count > 0 ? values[0] : null;
+                _logger.LogError(ex, "An error occurred during login.");
+                await RedirectWithErrorMessage(context, "An internal error occurred. Please try again later.");
             }
-
-            var username = await GetFormValue("UserName");
-            var password = await GetFormValue("Password");
-
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-            {
-                RedirectWithErrorMessage(context, "Username and Password are required.");
-                return;
-            }
-
-            // Check for setup: if NO users exist, redirect to setup
-            if (!repository.GetAllUsers().Any())
-            {
-                var setupUrl = context.Request.PathBase + UserSetupPage.PageRoute;
-                var httpContextForSetup = context.GetHttpContext();
-                httpContextForSetup.Response.StatusCode = 302;
-                httpContextForSetup.Response.Headers["Location"] = setupUrl;
-                return;
-            }
-
-            var user = repository.GetUserByUsername(username);
-            if (user == null || string.IsNullOrEmpty(user.Password) || !PasswordHelper.VerifyPassword(password, user.Password)) 
-            {
-                RedirectWithErrorMessage(context, "Invalid username or password.");
-                return;
-            }
-
-            // Set cookie
-            var httpContext = context.GetHttpContext();
-            var path = httpContext.Request.PathBase.HasValue && !string.IsNullOrWhiteSpace(httpContext.Request.PathBase.Value)
-                ? httpContext.Request.PathBase.Value
-                : "/";
-
-            httpContext.Response.Cookies.Append("NomSolJobManagerUser", username, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = httpContext.Request.IsHttps,
-                Expires = DateTimeOffset.Now.AddDays(7),
-                Path = path,
-                SameSite = SameSiteMode.Lax
-            });
-
-            var redirectUrl = context.Request.PathBase + JobManagerPage.PageRoute;
-            httpContext.Response.StatusCode = 302;
-            httpContext.Response.Headers["Location"] = redirectUrl;
-            await context.Response.WriteAsync($"Redirecting to {redirectUrl}...");
         }
 
-        private void RedirectWithErrorMessage(DashboardContext context, string message)
+        private async Task RedirectWithErrorMessage(DashboardContext context, string message)
         {
             var httpContext = context.GetHttpContext();
             var redirectUrl = context.Request.PathBase + UserLoginPage.PageRoute + "?error=" + Uri.EscapeDataString(message);
             httpContext.Response.StatusCode = 302;
             httpContext.Response.Headers["Location"] = redirectUrl;
-            context.Response.WriteAsync($"Redirecting with error to {redirectUrl}...");
+            await context.Response.WriteAsync($"Redirecting to {redirectUrl}...");
         }
     }
 }
+

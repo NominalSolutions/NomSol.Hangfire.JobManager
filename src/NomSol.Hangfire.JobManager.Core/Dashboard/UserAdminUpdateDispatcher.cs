@@ -5,16 +5,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
 {
     public class UserAdminUpdateDispatcher : IDashboardDispatcher
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<UserAdminUpdateDispatcher> _logger;
 
         public UserAdminUpdateDispatcher(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _logger = _serviceProvider.GetRequiredService<ILogger<UserAdminUpdateDispatcher>>();
         }
 
         public async Task Dispatch(DashboardContext context)
@@ -89,7 +92,8 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
             }
             catch (Exception ex)
             {
-                error = ex.Message;
+                _logger.LogError(ex, "An error occurred during user admin update.");
+                error = "An internal error occurred during the update. Please check the logs.";
             }
 
             var redirectUrl = context.Request.PathBase + context.Request.Path.Replace("/update", "");
@@ -105,3 +109,4 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
         }
     }
 }
+

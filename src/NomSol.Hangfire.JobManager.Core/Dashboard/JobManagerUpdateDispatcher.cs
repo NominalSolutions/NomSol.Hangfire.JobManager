@@ -3,16 +3,19 @@ using NomSol.Hangfire.JobManager.Core.Interfaces;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace NomSol.Hangfire.JobManager.Core.Dashboard
 {
     public class JobManagerUpdateDispatcher : IDashboardDispatcher
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<JobManagerUpdateDispatcher> _logger;
 
         public JobManagerUpdateDispatcher(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _logger = _serviceProvider.GetRequiredService<ILogger<JobManagerUpdateDispatcher>>();
         }
 
         public async Task Dispatch(DashboardContext context)
@@ -68,11 +71,12 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
                         }
                         catch (Exception ex)
                         {
+                            _logger.LogError(ex, "An error occurred during job manager update for JobId {JobId}.", jobId);
+
                             // Revert the DB change since validation/scheduling failed
                             repository.UpdateJob(jobId, oldCron, oldArgs, oldStatus);
                             
-                            var errorMessage = ex.Message.Replace(" Please see the inner exception for details. (Parameter 'cronExpression')", "");
-                            var errorUrl = context.Request.PathBase + JobManagerPage.PageRoute + "?error=" + System.Net.WebUtility.UrlEncode("An error occurred: " + errorMessage);
+                            var errorUrl = context.Request.PathBase + JobManagerPage.PageRoute + "?error=" + System.Net.WebUtility.UrlEncode("An update error occurred. Please check the logs.");
                             await response.WriteAsync($"<script>window.location.href='{errorUrl}';</script>");
                             return;
                         }
@@ -80,8 +84,7 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
                 }
 
                 // Redirect back to page to prevent POST form resubmission
-                int statusCode = 200;
-                response.StatusCode = statusCode;
+                response.StatusCode = 200;
                 var redirectUrl = context.Request.PathBase + JobManagerPage.PageRoute;
                 await response.WriteAsync($"<script>window.location.href='{redirectUrl}';</script>");
                 return;
@@ -91,3 +94,4 @@ namespace NomSol.Hangfire.JobManager.Core.Dashboard
         }
     }
 }
+

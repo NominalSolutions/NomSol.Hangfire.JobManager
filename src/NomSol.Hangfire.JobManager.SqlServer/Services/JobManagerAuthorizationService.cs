@@ -2,6 +2,8 @@ using Hangfire.Dashboard;
 using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Models;
 using System.Linq;
+using Microsoft.AspNetCore.DataProtection;
+using System;
 
 namespace NomSol.Hangfire.JobManager.SqlServer.Services
 {
@@ -13,13 +15,18 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Services
     {
         private readonly IHangfireJobManagerRepository _repository;
         private readonly NomSolJobManagerOptions _options;
+        private readonly IDataProtector _protector;
 
         public bool IsEnabled => _options.EnableUserAdmin;
 
-        public JobManagerAuthorizationService(IHangfireJobManagerRepository repository, NomSolJobManagerOptions options)
+        public JobManagerAuthorizationService(
+            IHangfireJobManagerRepository repository, 
+            NomSolJobManagerOptions options,
+            IDataProtectionProvider dataProtectionProvider)
         {
             _repository = repository;
             _options = options;
+            _protector = dataProtectionProvider.CreateProtector("NomSol.Hangfire.JobManager.Auth");
         }
 
         public string? GetCurrentUsername(object dashboardContext)
@@ -36,9 +43,17 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Services
                 }
 
                 var httpContext = context.GetHttpContext();
-                if (httpContext.Request.Cookies.TryGetValue("NomSolJobManagerUser", out var username))
+                if (httpContext.Request.Cookies.TryGetValue("NomSolJobManagerUser", out var protectedUsername))
                 {
-                    return username;
+                    try
+                    {
+                        return _protector.Unprotect(protectedUsername);
+                    }
+                    catch (Exception)
+                    {
+                        // Decryption failed (invalid or tampered cookie)
+                        return null;
+                    }
                 }
                 return null;
             }
@@ -85,3 +100,4 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Services
         }
     }
 }
+
