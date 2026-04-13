@@ -64,6 +64,7 @@ namespace NomSol.Hangfire.JobManager.SqlServer
 
             services.AddDbContext<HangfireDbContext>(options2 => options2.UseSqlServer(connectionString));
 
+            services.AddDataProtection();
             services.AddSingleton(options);
             services.AddScoped<ISchedulerService, SchedulerService>();
             services.AddScoped<IJobManagerServices, JobManagerService>();
