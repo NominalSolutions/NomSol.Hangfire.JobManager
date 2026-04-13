@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     name: Publish to NuGet
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +21,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x' # Match your .NET version
+          dotnet-version: '10.0.x' # Match your .NET version
 
       # Restore dependencies
       - name: Restore dependencies
