@@ -7,7 +7,7 @@
 	<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	<Authors>Jermy Hernandez</Authors>
 	<Company>Nominal Solutions LLC</Company>
-	<Version>1.0.2</Version>
+	<Version>0.0.2-beta</Version>
 	<Description>JobManager for Hangfire is a job queue manager designed to be able to dynamically manage jobs.</Description>
 	<Copyright />
 	<PackageProjectUrl>https://github.com/NominalSolutions/NomSol.Hangfire.JobManager</PackageProjectUrl>
