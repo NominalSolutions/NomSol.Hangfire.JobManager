@@ -1,4 +1,4 @@
-﻿using NomSol.Hangfire.JobManager.Core.Interfaces;
+using NomSol.Hangfire.JobManager.Core.Interfaces;
 using NomSol.Hangfire.JobManager.Core.Models;
 using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
@@ -28,6 +28,21 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Repository
             return hangfireContext.GetAllJobs();
         }
 
+        public List<Core.Models.Data.Tables.JobManager> GetAllRecurringJobs()
+        {
+            return hangfireContext.GetAllRecurringJobs();
+        }
+
+        public Core.Models.Data.Tables.JobManager? GetJobById(long jobId)
+        {
+            return hangfireContext.GetJobById(jobId);
+        }
+
+        public void UpdateJob(long jobId, string cronExpression, string arguments, string status)
+        {
+            hangfireContext.UpdateJob(jobId, cronExpression, arguments, status);
+        }
+
         public async Task AddFireForgetJob(FireForgetJobRequest request)
         {
             FireForgetJobManager fireForgetJobManager = new FireForgetJobManager
@@ -41,6 +56,31 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data.Repository
             };
 
             await hangfireContext.CreateFireForgetJob(fireForgetJobManager);
+        }
+
+        public List<JobManagerUsers> GetAllUsers()
+        {
+            return hangfireContext.GetAllUsers();
+        }
+
+        public JobManagerUsers? GetUserByUsername(string username)
+        {
+            return hangfireContext.GetUserByUsername(username);
+        }
+
+        public void AddUser(string username, string role, string? password = null)
+        {
+            hangfireContext.AddUser(username, role, password);
+        }
+
+        public void UpdateUser(long userId, string username, string role, string? password = null)
+        {
+            hangfireContext.UpdateUser(userId, username, role, password);
+        }
+
+        public void DeleteUser(long userId)
+        {
+            hangfireContext.DeleteUser(userId);
         }
     }
 }

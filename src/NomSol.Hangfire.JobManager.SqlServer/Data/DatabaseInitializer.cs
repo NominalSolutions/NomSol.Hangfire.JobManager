@@ -1,20 +1,20 @@
-﻿using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
+using NomSol.Hangfire.JobManager.Core.Models;
+using NomSol.Hangfire.JobManager.Core.Models.Data.Tables;
 using NomSol.Hangfire.JobManager.SqlServer.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
-using NomSol.Hangfire.JobManager.Core;
 
 namespace NomSol.Hangfire.JobManager.SqlServer.Data
 {
     public class DatabaseInitializer
     {
-        public void InitializeDatabase(HangfireDbContext context, bool GenerateSampleJob = false)
+        public void InitializeDatabase(HangfireDbContext context, NomSolJobManagerOptions options)
         {
-            GenerateData(context, GenerateSampleJob);
+            GenerateData(context, options);
         }
 
-        private static void GenerateData(HangfireDbContext context, bool GenerateSampleJob)
+        private static void GenerateData(HangfireDbContext context, NomSolJobManagerOptions options)
         {
             //Create Schema
             _ = context.Database.ExecuteSqlRaw("IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name=N'" + ServiceCollectionExtension._schemaName + "') EXEC('CREATE SCHEMA [" + ServiceCollectionExtension._schemaName + "]');");
@@ -30,6 +30,12 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data
 
             //Create FireForgetJobManager Table
             _ = context.Database.ExecuteSqlRaw("if not exists(select*from INFORMATION_SCHEMA.TABLES where TABLE_NAME='FireForgetJobManager' and TABLE_SCHEMA =N'" + ServiceCollectionExtension._schemaName + "')CREATE TABLE[" + ServiceCollectionExtension._schemaName + "].[FireForgetJobManager]([PK_FF_Job_ID][bigint]IDENTITY(1,1)NOT NULL,[FK_JobTypeID][bigint]NOT NULL,[JobName][varchar](25)NOT NULL,[Arguments][nvarchar](max)NOT NULL,[Status][varchar](10)NOT NULL,[Created_Date][datetime]NOT NULL,[Modified_Date][datetime]NULL,[Active_Flag]BIT DEFAULT 0 NOT NULL,CONSTRAINT[PK_HangFire_FireForgetJobManager_PK]PRIMARY KEY CLUSTERED([PK_FF_Job_ID]ASC)WITH(PAD_INDEX=OFF,STATISTICS_NORECOMPUTE=OFF,IGNORE_DUP_KEY=OFF,ALLOW_ROW_LOCKS=ON,ALLOW_PAGE_LOCKS=ON)ON[PRIMARY])ON[PRIMARY];");
+
+            //Create JobManagerUsers Table (for optional user admin)
+            _ = context.Database.ExecuteSqlRaw("if not exists(select*from INFORMATION_SCHEMA.TABLES where TABLE_NAME='JobManagerUsers' and TABLE_SCHEMA =N'" + ServiceCollectionExtension._schemaName + "')CREATE TABLE[" + ServiceCollectionExtension._schemaName + "].[JobManagerUsers]([PK_User_ID][bigint]IDENTITY(1,1)NOT NULL,[Username][varchar](100)NOT NULL UNIQUE,[Password][nvarchar](max)NULL,[Role][varchar](20)NOT NULL,[Created_Date][datetime]NOT NULL,[Modified_Date][datetime]NULL,[Active_Flag]BIT DEFAULT 0 NOT NULL,CONSTRAINT[PK_HangFire_JobManagerUsers_PK]PRIMARY KEY CLUSTERED([PK_User_ID]ASC)WITH(PAD_INDEX=OFF,STATISTICS_NORECOMPUTE=OFF,IGNORE_DUP_KEY=OFF,ALLOW_ROW_LOCKS=ON,ALLOW_PAGE_LOCKS=ON)ON[PRIMARY])ON[PRIMARY];");
+
+            // Ensure Password column exists if table was already created
+            _ = context.Database.ExecuteSqlRaw("IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'JobManagerUsers' AND TABLE_SCHEMA = N'" + ServiceCollectionExtension._schemaName + "') BEGIN IF NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'JobManagerUsers' AND COLUMN_NAME = 'Password' AND TABLE_SCHEMA = N'" + ServiceCollectionExtension._schemaName + "') BEGIN ALTER TABLE [" + ServiceCollectionExtension._schemaName + "].[JobManagerUsers] ADD [Password] NVARCHAR(MAX) NULL; END END");
 
             //Add constrains
             string consName = "FK_JobTypeID_" + ServiceCollectionExtension._schemaName;
@@ -100,7 +106,7 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data
 
             //Add Recurring Jobs          
 
-            if (GenerateSampleJob)
+            if (options.GenerateSampleJob)
             {
                 int jobManger = context.JobManager.Where(aa => aa.JobName == "CountToOneHundred").Count();
                 if (jobManger == 0)
@@ -118,6 +124,7 @@ namespace NomSol.Hangfire.JobManager.SqlServer.Data
                     });
                 }
             }
+
             context.SaveChanges();
         }
     }

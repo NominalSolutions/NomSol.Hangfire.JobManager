@@ -8,19 +8,45 @@ on:
 jobs:
   publish:
     name: Publish to NuGet
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
 
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up .NET
       - name: Set up .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x' # Match your .NET version
+          dotnet-version: '10.0.x' # Match your .NET version
 
+      - name: Validate and extract version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.release.tag_name }}"
+          $targetBranch = "${{ github.event.release.target_commitish }}"
+          $regex = '^v(?<version>\d+\.\d+\.\d+)(-(?<pre>[a-zA-Z]+)\.\d+)?$'
+
+          if ($tag -notmatch $regex) {
+            Write-Error "Invalid tag format: $tag. Expected format: v1.2.3 or v1.2.3-alpha.1"
+            exit 1
+          }
+
+          $version = $tag.TrimStart("v")
+          $pre = $Matches['pre']
+          $isPrerelease = $version.Contains('-')
+          
+            if (-not $pre -and $targetBranch -ne "main") {
+              Write-Error "Stable packages must be released from the 'main' branch. Current branch: $targetBranch"
+              exit 1
+            }          
+
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "is_prerelease=$isPrerelease" >> $env:GITHUB_OUTPUT
       # Restore dependencies
       - name: Restore dependencies
         run: |
@@ -36,8 +62,8 @@ jobs:
       # Pack the projects
       - name: Pack the projects
         run: |
-          dotnet pack ./src/NomSol.Hangfire.JobManager.Core/NomSol.Hangfire.JobManager.Core.csproj --configuration Release --output ./artifacts --version-suffix ${{ github.event.release.tag_name }}
-          dotnet pack ./src/NomSol.Hangfire.JobManager.SqlServer/NomSol.Hangfire.JobManager.SqlServer.csproj --configuration Release --output ./artifacts --version-suffix ${{ github.event.release.tag_name }}
+          dotnet pack ./src/NomSol.Hangfire.JobManager.Core/NomSol.Hangfire.JobManager.Core.csproj --configuration Release --output ./artifacts -p:PackageVersion=${{ steps.version.outputs.version }}
+          dotnet pack ./src/NomSol.Hangfire.JobManager.SqlServer/NomSol.Hangfire.JobManager.SqlServer.csproj --configuration Release --output ./artifacts -p:PackageVersion=${{ steps.version.outputs.version }}
 
       # Push packages to NuGet
       - name: Push to NuGet

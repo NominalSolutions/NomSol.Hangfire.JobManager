@@ -1,6 +1,5 @@
 ﻿using Asp.Versioning;
 using NomSol.Hangfire.JobManager.Core.Models;
-using System.Reflection.Metadata.Ecma335;
 
 namespace NomSol.Hangfire.JobManager.Core.Helpers
 {

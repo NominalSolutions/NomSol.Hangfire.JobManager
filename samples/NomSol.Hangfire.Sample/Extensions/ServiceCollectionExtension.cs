@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Hangfire;
@@ -31,10 +31,11 @@ namespace NomSol.Hangfire.Dev.Extensions
 
             var nomsolJobManagerOptions = new NomSolJobManagerOptions
             {
-                GenerateSampleJob = true
+                GenerateSampleJob = true,
+                UseLocalAuth = true
             };
 
-            services.AddHangfireJobManagerBusinessServices();
+            services.AddHangfireJobManagerBusinessServices(nomsolJobManagerOptions);
 
             services.AddHangfire(config =>
             {
