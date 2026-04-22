@@ -40,10 +40,6 @@ jobs:
           $pre = $Matches['pre']
           $isPrerelease = $version.Contains('-')
           
-            if ($pre -eq "beta" -and $targetBranch -ne "develop") {
-              Write-Error "Beta packages (-beta.X) must be released from the 'develop' branch. Current branch: $targetBranch"
-              exit 1
-            }
             if (-not $pre -and $targetBranch -ne "main") {
               Write-Error "Stable packages must be released from the 'main' branch. Current branch: $targetBranch"
               exit 1
